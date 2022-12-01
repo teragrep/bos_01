@@ -24,7 +24,7 @@ jobs:
         settings-path: ${{ github.workspace }}
 
     - name: Repack
-      run: mvn -B -Dversion=${{ github.event.release.tag_name }} -s ${{ github.workspace }}/settings.xml package
+      run: mvn -B -Drelease.version=${{ github.event.release.tag_name }} -s ${{ github.workspace }}/settings.xml package
       env:
         GITHUB_TOKEN: ${{ github.token }}
 
