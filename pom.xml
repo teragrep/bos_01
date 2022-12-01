@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <packaging>pom</packaging>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.teragrep</groupId>
+  <artifactId>bos_01</artifactId>
+  <version>${release.version}</version>
+  <name>bos_01</name>
+  <description>Teragrep bos_01</description>
+  <url>https://teragrep.com</url>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <java.version>1.8</java.version>
+    <release.version>2.0.0</release.version>
+    <s3proxy.version>2.0.0</s3proxy.version>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>org.gaul</groupId>
+      <artifactId>s3proxy</artifactId>
+      <version>${s3proxy.version}</version>
+    </dependency>
+  </dependencies>
+  <build>
+    <directory>${project.basedir}/target</directory>
+    <plugins>
+      <!-- enforce minimum maven version -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <execution>
+            <id>enforce-maven</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireMavenVersion>
+                  <version>3.2.5</version>
+                </requireMavenVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- download s3proxy -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.4.0</version>
+        <executions>
+          <execution>
+            <id>copy-dependencies</id>
+            <phase>package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/s3proxy/share</outputDirectory>
+              <overWriteReleases>true</overWriteReleases>
+              <overWriteSnapshots>true</overWriteSnapshots>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- create rpm package -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>rpm-maven-plugin</artifactId>
+        <version>2.2.0</version>
+        <extensions>true</extensions>
+        <executions>
+          <execution>
+            <id>default-rpm</id>
+            <goals>
+              <goal>rpm</goal>
+            </goals>
+            <phase>package</phase>
+          </execution>
+        </executions>
+        <configuration>
+          <summary>${project.groupId}-${project.artifactId}</summary>
+          <name>${project.groupId}-${project.artifactId}</name>
+          <version>${project.version}</version>
+          <release>${env.GITHUB_RUN_NUMBER}</release>
+          <license>The Apache Software License, Version 2.0</license>
+          <distribution>Teragrep</distribution>
+          <vendor>https://teragrep.com//</vendor>
+          <packager>Teragrep &lt;servicedesk@teragrep.com&gt;</packager>
+          <group>Teragrep/bos_01</group>
+          <description>${project.groupId}-${project.artifactId}</description>
+          <defaultUsername>srv-s3px</defaultUsername>
+          <defaultGroupname>srv-s3px</defaultGroupname>
+          <defaultFilemode>0644</defaultFilemode>
+          <defaultDirmode>0755</defaultDirmode>
+          <mappings>
+            <mapping>
+              <directory>/usr/lib/systemd/system</directory>
+              <directoryIncluded>false</directoryIncluded>
+              <sources>
+                <source>
+                  <location>${project.basedir}/src/main/resources/bos_01.service</location>
+                </source>
+              </sources>
+            </mapping>
+            <mapping>
+              <directory>/opt/teragrep/${project.artifactId}/etc</directory>
+              <configuration>noreplace</configuration>
+              <directoryIncluded>true</directoryIncluded>
+              <filemode>600</filemode>
+              <dirmode>700</dirmode>
+              <username>srv-s3px</username>
+              <groupname>srv-s3px</groupname>
+              <recurseDirectories>true</recurseDirectories>
+              <sources>
+                <source>
+                  <location>${project.basedir}/src/main/resources/s3proxy.properties</location>
+                </source>
+              </sources>
+            </mapping>
+            <mapping>
+              <directory>/opt/teragrep/${project.artifactId}/share</directory>
+              <directoryIncluded>true</directoryIncluded>
+              <filemode>755</filemode>
+              <dirmode>755</dirmode>
+              <username>srv-s3px</username>
+              <groupname>srv-s3px</groupname>
+              <recurseDirectories>true</recurseDirectories>
+              <sources>
+                <source>
+                  <location>${project.basedir}/target/s3proxy/share/s3proxy-${s3proxy.version}.jar</location>
+                  <destination>s3proxy.jar</destination>
+                </source>
+                <source>
+                  <location>${project.basedir}/target/s3proxy/share/</location>
+                  <excludes>
+                    <exclude>s3proxy-${s3proxy.version}.jar</exclude>
+                  </excludes>
+                </source>
+              </sources>
+            </mapping>
+          </mappings>
+          <requires>
+            <require>java-1.8.0-openjdk &gt;= 1.9.0</require>
+          </requires>
+          <preinstallScriptlet>
+            <script>
+getent group srv-s3px > /dev/null || groupadd -r srv-s3px;
+getent passwd srv-s3px > /dev/null || useradd -r -g srv-s3px -d /opt/teragrep/${project.artifactId} -s /sbin/nologin -c "Service User" srv-s3px;
+if [ ! -d /opt/teragrep/${project.artifactId}/logs ]; then
+    mkdir -p /opt/teragrep/${project.artifactId}/logs;
+    chown srv-s3px:srv-s3px /opt/teragrep/${project.artifactId}/logs;
+    chmod 700 /opt/teragrep/${project.artifactId}/logs;
+fi;
+exit 0;
+            </script>
+          </preinstallScriptlet>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
