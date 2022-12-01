@@ -133,13 +133,13 @@
               <recurseDirectories>true</recurseDirectories>
               <sources>
                 <source>
-                  <location>${project.basedir}/target/s3proxy/share/s3proxy-${version}.jar</location>
+                  <location>${project.basedir}/target/s3proxy/share/s3proxy-${s3proxy.version}.jar</location>
                   <destination>s3proxy.jar</destination>
                 </source>
                 <source>
                   <location>${project.basedir}/target/s3proxy/share/</location>
                   <excludes>
-                    <exclude>s3proxy-${version}.jar</exclude>
+                    <exclude>s3proxy-${s3proxy.version}.jar</exclude>
                   </excludes>
                 </source>
               </sources>
