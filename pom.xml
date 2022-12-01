@@ -17,6 +17,13 @@
     <release.version>2.0.0</release.version>
     <s3proxy.version>2.0.0</s3proxy.version>
   </properties>
+  <dependencies>
+    <dependency>
+      <groupId>org.gaul</groupId>
+      <artifactId>s3proxy</artifactId>
+      <version>${s3proxy.version}</version>
+    </dependency>
+  </dependencies>
   <build>
     <directory>${project.basedir}/target</directory>
     <plugins>
@@ -48,26 +55,18 @@
         <version>3.4.0</version>
         <executions>
           <execution>
-            <id>copy</id>
+            <id>copy-dependencies</id>
             <phase>package</phase>
             <goals>
-              <goal>copy</goal>
+              <goal>copy-dependencies</goal>
             </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/s3proxy/share</outputDirectory>
+              <overWriteReleases>true</overWriteReleases>
+              <overWriteSnapshots>true</overWriteSnapshots>
+            </configuration>
           </execution>
         </executions>
-        <configuration>
-          <artifactItems>
-            <artifactItem>
-              <groupId>org.gaul</groupId>
-              <artifactId>s3proxy</artifactId>
-              <version>${s3proxy.version}</version>
-              <destFileName>s3proxy.jar</destFileName>
-            </artifactItem>
-          </artifactItems>
-          <outputDirectory>${project.build.directory}/</outputDirectory>
-          <overWriteReleases>true</overWriteReleases>
-          <overWriteSnapshots>true</overWriteSnapshots>
-        </configuration>
       </plugin>
       <!-- create rpm package -->
       <plugin>
@@ -134,8 +133,14 @@
               <recurseDirectories>true</recurseDirectories>
               <sources>
                 <source>
-                  <location>${project.basedir}/target/s3proxy.jar</location>
+                  <location>${project.basedir}/target/s3proxy/share/s3proxy-${version}.jar</location>
                   <destination>s3proxy.jar</destination>
+                </source>
+                <source>
+                  <location>${project.basedir}/target/s3proxy/share/</location>
+                  <excludes>
+                    <exclude>s3proxy-${version}.jar</exclude>
+                  </excludes>
                 </source>
               </sources>
             </mapping>
