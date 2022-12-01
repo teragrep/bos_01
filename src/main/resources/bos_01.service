@@ -1,0 +1,11 @@
+[Unit]
+Description=com.teragrep.bos_01
+ConditionPathExists=/opt/teragrep/bos_01/etc/s3proxy.properties
+
+[Service]
+ExecStart=/usr/bin/java -jar /opt/teragrep/bos_01/share/s3proxy.jar --properties /opt/teragrep/bos_01/etc/s3proxy.properties
+User=srv-s3px
+WorkingDirectory=/opt/teragrep/bos_01/etc
+
+[Install]
+WantedBy=multi-user.target
