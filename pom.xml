@@ -15,7 +15,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.version>1.8</java.version>
     <release.version>2.0.0</release.version>
-    <s3proxy.version>2.0.0</s3proxy.version>
+    <s3proxy.version>2.1.0</s3proxy.version>
   </properties>
   <dependencies>
     <dependency>
