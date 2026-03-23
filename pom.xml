@@ -100,6 +100,10 @@
           <defaultGroupname>srv-s3px</defaultGroupname>
           <defaultFilemode>0644</defaultFilemode>
           <defaultDirmode>0755</defaultDirmode>
+          <keyname>${env.RPM_SIGNING_KEYNAME}</keyname>
+          <keyPassphrase>
+            <passphrase>${env.RPM_SIGNING_PASSPHRASE}</passphrase>
+          </keyPassphrase>
           <mappings>
             <mapping>
               <directory>/usr/lib/systemd/system</directory>
